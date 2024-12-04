@@ -1,9 +1,8 @@
-import { FaCircle, FaSquare, FaStar } from 'react-icons/fa'
+import { FaCircle, FaSquare } from 'react-icons/fa'
 import { FaDiamond, FaX } from 'react-icons/fa6'
 import { RiRectangleFill } from 'react-icons/ri'
 import { TbTriangleFilled } from 'react-icons/tb'
-
-export type Shape = 'square' | 'circle' | 'triangle' | 'diamond'
+import { Shape } from './types'
 
 export const shapeOptions = (toggleShape: (shape: Shape) => void, color: string, shape: Shape) => [
   {

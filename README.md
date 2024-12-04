@@ -19,9 +19,10 @@ react-icons
 
 ### Coming Soon
 - Drag and drop objects
+- Allow resizing objects
+- Allow deleting images
+- improve animation smoothness
 - Add/Edit text
 - Save edits to a local file and download
 - Infinite canvas sand scrollabe/draggable
-- Allow resizing objects
-- Image uploads
 - Color picker enhancements (more colors or hex picker)

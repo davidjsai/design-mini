@@ -1,0 +1,159 @@
+.main-layout {
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+#grid-overlay {
+  box-sizing: border-box;
+  background-color: #343434;
+  height: 100%;
+  overflow: hidden;
+  width: 100%;
+  position: absolute;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(20px, 1fr));
+  div {
+    border: 0.5px solid #848884;
+    height: 20px;
+    opacity: .5;
+  }
+}
+.grid {
+  height: 100%;
+  width: 100%;
+  position: relative;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  box-sizing: border-box;
+
+  .option {
+    width: 60px;
+    height: 60px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #1B1212;
+    color: white;
+    cursor: pointer;
+  }
+
+  &.sidebar {
+    min-height: 240px;
+    width: 60px;
+    background-color: #1B1212;
+    position: absolute;
+    flex-direction: column;
+    top: 50%;
+    transform: translate(0, -50%);
+    border-radius: 20px;
+    overflow: hidden;
+    left: 20px;
+    z-index: 10;
+
+    .option {
+      border: none;
+      border-bottom: 1px solid gray !important;
+
+      &.last-item {
+        border: none !important;
+      }
+    }
+
+    p {
+      display: flex;
+      align-items: center;
+      gap: 2px;
+
+      span {
+        display: inline-block;
+        font-size: 14px;
+      }
+    }
+
+  }
+
+  &:not(.sidebar) {
+    position: absolute;
+    top: 30px;
+    left: 50%;
+    transform: translate(-50%, 20%);
+    border-radius: 20px;
+    overflow: hidden;
+    margin-left: 0;
+    margin-right: 0;
+    z-index: 10;
+
+    .option {
+      border: none;
+      border-right: 1px solid gray !important;
+      width: 60px;
+      height: 60px;
+
+      &.last-item {
+        border: none !important;
+      }
+
+      &.selected {
+        color: gold;
+      }
+    }
+
+    .option:hover {
+      color: silver;
+    }
+
+  }
+}
+
+.layout-top {
+  position: relative;
+  width: 100%;
+}
+
+.layout-bottom {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  display: flex;
+
+  canvas {
+    width: 100%;
+    position: relative;
+    z-index: 1;
+    height: 100%;
+  }
+}
+
+.option-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px;
+  border-radius: 50%;
+  width: 15px;
+  height: 15px;
+  
+  &.selected {
+    border: 1px solid gold;
+  }
+
+  &:hover {
+    border: 1px solid silver;
+  }
+
+  &:active {
+    transform: scale(1.2);
+  }
+}
+
+input[type="file"] {
+  display: none;
+}
