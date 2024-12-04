@@ -37,7 +37,7 @@ export const DesignCanvas = () => {
       const img = new Image()
       const url = URL.createObjectURL(file)
       img.src = url
-      img.onload = (e) => {
+      img.onload = () => {
         const offsetX = img.width / 2
         const offsetY = img.height / 2
         const x = canvasRef.current!.clientWidth / 2
@@ -45,7 +45,7 @@ export const DesignCanvas = () => {
         ctx.drawImage(img, x - offsetX, y - offsetY)
       }
 
-      img.onerror = (e) => {
+      img.onerror = () => {
         alert(`Error occurred while uploading img: ${url}`)
       }
     }    

@@ -17,12 +17,17 @@ React, TypeScript, & Vite bundler
 ### Libraries Used
 react-icons
 
-### Coming Soon
+## Coming Soon
+
+__Features__
 - Drag and drop objects
 - Allow resizing objects
 - Allow deleting images
-- improve animation smoothness
 - Add/Edit text
 - Save edits to a local file and download
 - Infinite canvas sand scrollabe/draggable
 - Color picker enhancements (more colors or hex picker)
+
+__Bugs/Issues__
+- Improve animation smoothness (choppy for pencil and paint brush on small point sizes)
+- Shape dimensions need updating when resizing window
