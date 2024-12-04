@@ -1,9 +1,9 @@
 import { FaCircle, FaSquare, FaStar } from 'react-icons/fa'
-import { FaX } from 'react-icons/fa6'
+import { FaDiamond, FaX } from 'react-icons/fa6'
 import { RiRectangleFill } from 'react-icons/ri'
 import { TbTriangleFilled } from 'react-icons/tb'
 
-export type Shape = 'square' | 'circle' | 'triangle' | 'star'
+export type Shape = 'square' | 'circle' | 'triangle' | 'diamond'
 
 export const shapeOptions = (toggleShape: (shape: Shape) => void, color: string, shape: Shape) => [
   {
@@ -15,8 +15,8 @@ export const shapeOptions = (toggleShape: (shape: Shape) => void, color: string,
     onClick: () => toggleShape('square')
   },
   {
-    component: () => <div className={"option-container " + (shape === 'star' ? 'selected' : '')}><FaStar color={color}/></div>,
-    onClick: () => toggleShape('star')
+    component: () => <div className={"option-container " + (shape === 'diamond' ? 'selected' : '')}><FaDiamond color={color}/></div>,
+    onClick: () => toggleShape('diamond')
   },
   {
     component: () => <div className={"option-container " + (shape === 'triangle' ? 'selected' : '')}><TbTriangleFilled color={color}/></div>,
@@ -29,15 +29,12 @@ export const colorPickerOptions = (toggleColor: (color: string) => void, color: 
     component: () => <div className={"option-container " + (color === 'red' ? 'selected' : '')}><FaCircle color='red'/></div>,
     onClick: () => {
       toggleColor('red')
-      console.log('toggled red')
-
     }
   },
   {
     component: () =>  <div className={"option-container " + (color === 'blue' ? 'selected' : '')}><FaCircle color='blue'/></div>,
     onClick: () => {
       toggleColor('blue')
-      console.log('toggled blue')
     }
   },
   {
@@ -50,8 +47,6 @@ export const colorPickerOptions = (toggleColor: (color: string) => void, color: 
     component: () => <div className={"option-container " + (color === 'white' ? 'selected' : '')}><FaCircle color='white'/></div>,
     onClick: () => {
       toggleColor('white')
-      console.log('toggled white')
-
     }
   },
 ]

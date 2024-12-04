@@ -1,102 +1,136 @@
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { FaPaintRoller, FaPalette, FaPen, FaShapes, FaTrash } from 'react-icons/fa'
 import { FaArrowRightLong } from 'react-icons/fa6'
 import { colorPickerOptions, lineOptions, paintBrushOptions, pencilOptions, Shape, shapeOptions } from '../tool-options'
 import { CanvasTool } from '../types'
 import './main-layout.css'
 
-// TODO: Fix bug where items are to the right and down instead at point
-// TODO: Fix event lag
+// TODO: Clean up repos: slim down files, create types file, remove uneeded code, etc
 
-// TODO: Bonus: Allow saving canvas to file and downloading
 // TODO: Bonus: Allow dragging and dropping text, shapes, and lines
 
 export const MainLayout = () => {
-  const [tool, setTool] = useState<CanvasTool >('pencil')
-  const [shape, setShape] = useState<Shape>('square')
-  const [startP, setStart] = useState<number[]>([0, 0])
-  const [endP, setEndP] = useState<number[]>([1, 0])
-  const [color, setColor] = useState<string>('white')
-  const [paintbrushStrokeSize, setPaintBrushStrokeSize]= useState(3)
-  const [pencilSize, setPencilSize] = useState(1)
-  const [lineWidth, setLineWidth] = useState(0.5)
+  const [selectedTool, setSelectedTool] = useState<CanvasTool>('pencil');
+  const [selectedShape, setSelectedShape] = useState<Shape>('square');
+  const [selectedColor, setSelectedColor] = useState<string>('white');
+  const [selectedPenSize, setSelectedPenSize] = useState<number>(1);
+  const [selectedPaintBrushSize, setSelectedPaintBrushSize] = useState<number>(3);
+  const [selectedLineWidth, setSelectedLineWidth] = useState<number>(0.5);
+
+  const toolRef = useRef<CanvasTool>('pencil');
+  const shapeRef = useRef<Shape>('square');
+  const colorRef = useRef<string>('white');
+  const paintbrushStrokeSizeRef = useRef<number>(3);
+  const pencilSizeRef = useRef<number>(1);
+  const lineWidthRef = useRef<number>(0.5);
+  const startPointRef = useRef<number[]>([0,0]);
+  const endPointRef = useRef<number[]>([1,0]);
   
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  const workingRef = useRef(false)
+  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
+  const drawingRef = useRef(false)
 
-  const drawCircle = (x: number, y: number, size: number) => {
-    const canvas = canvasRef.current;
-    if (!canvas) return;
+  // shape drawing methods
 
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return;
+  const drawCircle = useCallback((x: number, y: number, size: number) => {
+    const ctx = ctxRef.current!
     ctx.beginPath();
-    ctx.fillStyle = color
+    ctx.fillStyle = colorRef.current
     ctx.arc(x, y, size, 0, Math.PI * 2);
     ctx.fill();
-  }
+  }, [])
 
-  const drawSquare = (x: number, y: number, size: number = 50) => {
-    const ctx = canvasRef.current!.getContext('2d')!
+  const drawSquare = useCallback((x: number, y: number, size: number = 100) => {
+    const ctx = ctxRef.current!
     ctx.beginPath()
-    ctx.fillStyle = color
-    ctx.fillRect(x, y, size, size * .7)
+    ctx.fillStyle = colorRef.current
+    ctx.fillRect(x, y, size, size)
     ctx.fill()
-  }
+  }, [])
 
-  const drawLine = () => {
-    const ctx = canvasRef.current!.getContext('2d')!
-    ctx.strokeStyle = color
-    ctx.lineWidth = lineWidth
-    ctx.moveTo(startP[0], startP[1])
-    ctx.lineTo(endP[0], endP[1])
+  const drawTriangle = useCallback((x: number, y: number, size: number) => {
+    const ctx = ctxRef.current!
+    ctx.strokeStyle = colorRef.current
+    ctx.fillStyle = colorRef.current
+    ctx.lineWidth = lineWidthRef.current
+    ctx.moveTo(x,  y)
+    ctx.lineTo(x + size,  y - (size * 1.5))
+    ctx.lineTo(x + (size * 2), y)
+    ctx.lineTo(x,  y)
     ctx.stroke()
-  }
+    ctx.fill()
+  }, [])
 
-  const startTrackingPosition = (e: MouseEvent) => {
+  const drawDiamond = useCallback((x: number, y: number, size: number) => {
+    const ctx = ctxRef.current!
+    ctx.strokeStyle = colorRef.current
+    ctx.fillStyle = colorRef.current
+    ctx.lineWidth = lineWidthRef.current
+    ctx.moveTo(x,  y)
+    ctx.lineTo(x + size,  y - (size * 1.5))
+    ctx.lineTo(x + (size * 2), y)
+    ctx.lineTo(x + size,  y + (size * 1.5))
+    ctx.lineTo(x, y)
+    ctx.stroke()
+    ctx.fill()
+  }, [])
+
+  const drawLine = useCallback(() => {
+    const [startX, startY] = startPointRef.current
+    const [endX, endY] = endPointRef.current
+    const ctx = ctxRef.current!
+    ctx.strokeStyle = colorRef.current
+    ctx.lineWidth = lineWidthRef.current
+    ctx.moveTo(startX, startY)
+    ctx.lineTo(endX, endY)
+    ctx.stroke()
+  }, [])
+
+  // Event handlers
+
+  const startTrackingPosition = useCallback((e: MouseEvent) => {
     const start  = [
       e.clientX, 
       e.clientY
     ]
 
-    if (tool === 'shapes') {
-      if (shape === 'square') {
+    if (toolRef.current === 'shapes') {
+      if (shapeRef.current === 'square') {
         drawSquare(e.clientX, e.clientY)
-      } else if (shape === 'circle') {
-        drawCircle(e.clientX, e.clientY, 20)
+      } else if (shapeRef.current === 'circle') {
+        drawCircle(e.clientX, e.clientY, 60)
+      } else if (shapeRef.current === 'triangle') {
+        drawTriangle(e.clientX, e.clientY, 60)
       } else {
-        return
+        drawDiamond(e.clientX, e.clientY, 50)
       }
     } else  {
-      workingRef.current = true
-      setStart(start)
+      drawingRef.current = true
+      startPointRef.current = start
     }
-  }
+  }, [drawCircle, drawSquare])
 
-  const movePosition = (e: MouseEvent) => {
-    if (workingRef.current === true) {
+  const movePosition = useCallback((e: MouseEvent) => {
+    if (drawingRef.current) {
       const rect = canvasRef.current!.getBoundingClientRect();
-      if (tool === 'paintbrush') {
-        requestAnimationFrame(() => drawSquare(e.clientX - rect.left, e.clientY - rect.top, paintbrushStrokeSize))
-      } else if (tool === 'pencil') {
-        requestAnimationFrame(() => drawCircle(e.clientX - rect.left, e.clientY - rect.top, pencilSize))
+      if (toolRef.current === 'paintbrush') {
+        requestAnimationFrame(() => drawSquare(e.clientX - rect.left, e.clientY - rect.top, paintbrushStrokeSizeRef.current))
+      } else if (toolRef.current === 'pencil') {
+        requestAnimationFrame(() => drawCircle(e.clientX - rect.left, e.clientY - rect.top, pencilSizeRef.current))
       } else {
-        setEndP([
-          e.clientX, 
-          e.clientY
-        ])
+        endPointRef.current = [e.clientX, e.clientY]
       }
     }
-  }
+  }, [drawCircle, drawSquare])
 
-  const stopTrackingPosition = () => {
-    if (workingRef.current) {
-      workingRef.current = false
-      if (tool === 'line-maker') {
+  const stopTrackingPosition = useCallback(() => {
+    if (drawingRef.current) {
+      drawingRef.current = false
+      if (toolRef.current === 'line-maker') {
         requestAnimationFrame(drawLine)
       }
     }
-  }
+  }, [drawLine])
 
   const createGridOverlay = () => {
     const container = document.getElementById('grid-overlay')
@@ -113,43 +147,60 @@ export const MainLayout = () => {
   }
 
   const resetCanvas = () => {
-    const ctx = canvasRef.current?.getContext('2d')!
+    const ctx = ctxRef.current!
     ctx.clearRect(0, 0, canvasRef.current!.clientWidth, canvasRef.current!.clientHeight)
-    setColor('white')
-    setPaintBrushStrokeSize(3)
-    setShape('square')
+    colorRef.current = 'white'
+    paintbrushStrokeSizeRef.current = 3
+    shapeRef.current = 'square'
   }
 
+  // tool option toggle methods
+
   const toggleTool = (tool: CanvasTool) => {
-    setTool(tool)
+    toolRef.current = tool
+    setSelectedTool(tool)
   }
 
   const changePaintColor = (color: string) => {
-    setColor(color)
+    colorRef.current = color
+    setSelectedColor(color)
   }
 
   const changeLineWidth = (width: number) => {
-    setLineWidth(width)
+    lineWidthRef.current = width
+    setSelectedLineWidth(width)
   }
 
   const changeShape = (shape: Shape) => {
-    setShape(shape)
+    shapeRef.current =shape
+    setSelectedShape(shape)
   }
 
   const changePaintStroke = (strokeSize: number) => {
-    setPaintBrushStrokeSize(strokeSize)
+    paintbrushStrokeSizeRef.current = strokeSize
+    setSelectedPaintBrushSize(strokeSize)
   }
 
   const changePencilPoint = (size: number) => {
-    setPencilSize(size)
+    pencilSizeRef.current = size
+    setSelectedPenSize(size)
   }
 
   useEffect(() => {
     createGridOverlay()
-    if(canvasRef && canvasRef.current) {
-      canvasRef.current.addEventListener('mousedown', startTrackingPosition)
-      canvasRef.current.addEventListener('mouseup', stopTrackingPosition)
-      canvasRef.current.addEventListener('mousemove', movePosition)
+    const canvas = canvasRef.current
+    if(canvas) {
+      canvas.addEventListener('mousedown', startTrackingPosition)
+      canvas.addEventListener('mouseup', stopTrackingPosition)
+      canvas.addEventListener('mousemove', movePosition)
+
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+
+      const context = canvas.getContext('2d')
+      if (context) {
+        ctxRef.current = context
+      }
     }
 
     return () => {
@@ -157,38 +208,38 @@ export const MainLayout = () => {
       canvasRef.current?.removeEventListener('mouseup', stopTrackingPosition)
       canvasRef.current?.removeEventListener('mousemove', movePosition)
     }
-  }, [tool, shape, color, paintbrushStrokeSize, pencilSize, lineWidth, endP, startP])
+  }, [startTrackingPosition, movePosition, stopTrackingPosition])
 
   return (
     <div className="main-layout">
       <div className='layout-top'>
         <ul className="toolbar">
-          <li><button className={'option' + (tool === 'pencil' ? ' selected' : '')} onClick={() => toggleTool('pencil')}><FaPen/></button></li>
-          <li><button className={'option' + (tool === 'paintbrush' ? ' selected' : '')} onClick={() => toggleTool('paintbrush')}><FaPaintRoller/></button></li>
-          <li><button className={'option' + (tool === 'shapes' ? ' selected' : '')} onClick={() => toggleTool('shapes')}><FaShapes/></button></li>
-          <li><button className={'option' + (tool === 'line-maker' ? ' selected' : '')} onClick={() => toggleTool('line-maker')}><FaArrowRightLong/></button></li>
-          <li><button className={'option' + (tool === 'color-picker' ? ' selected' : '')} onClick={() => toggleTool('color-picker')}><FaPalette/></button></li>
+          <li><button className={'option' + (selectedTool === 'pencil' ? ' selected' : '')} onClick={() => toggleTool('pencil')}><FaPen/></button></li>
+          <li><button className={'option' + (selectedTool === 'paintbrush' ? ' selected' : '')} onClick={() => toggleTool('paintbrush')}><FaPaintRoller/></button></li>
+          <li><button className={'option' + (selectedTool === 'shapes' ? ' selected' : '')} onClick={() => toggleTool('shapes')}><FaShapes/></button></li>
+          <li><button className={'option' + (selectedTool === 'line-maker' ? ' selected' : '')} onClick={() => toggleTool('line-maker')}><FaArrowRightLong/></button></li>
+          <li><button className={'option' + (selectedTool === 'color-picker' ? ' selected' : '')} onClick={() => toggleTool('color-picker')}><FaPalette/></button></li>
           <li><button className='option last-item' onClick={resetCanvas}><FaTrash/></button></li>
         </ul>
 
       </div>
       <div className='layout-bottom'>
         <ul className="toolbar sidebar">
-          {tool ==='color-picker' && colorPickerOptions(changePaintColor, color).map(({component, onClick}, i) => {
+          {selectedTool ==='color-picker' && colorPickerOptions(changePaintColor, selectedColor).map(({component, onClick}, i) => {
             return <li key={`tool-option-${i}`}><button className='option' onClick={onClick}>{component()}</button></li>
           })}
-          {tool ==='shapes' && shapeOptions(changeShape, color, shape).map(({component, onClick}, i) => {
+          {selectedTool ==='shapes' && shapeOptions(changeShape, colorRef.current, selectedShape).map(({component, onClick}, i) => {
             return <li key={`tool-option-${i}`}><button className='option' onClick={onClick}>{component()}</button></li>
           })}
-          {tool === 'paintbrush' && paintBrushOptions(changePaintStroke, color, paintbrushStrokeSize).map(({component, onClick}, i) => {
-            return <li key={`tool-option-${i}`}><button className='option' onClick={onClick}>{component()}</button></li>
-          })}
-
-          {tool === 'pencil' && pencilOptions(changePencilPoint, color, pencilSize).map(({component, onClick}, i) => {
+          {selectedTool === 'paintbrush' && paintBrushOptions(changePaintStroke, selectedColor, selectedPaintBrushSize).map(({component, onClick}, i) => {
             return <li key={`tool-option-${i}`}><button className='option' onClick={onClick}>{component()}</button></li>
           })}
 
-          {tool === 'line-maker' && lineOptions(changeLineWidth, lineWidth).map(({component, onClick}, i) => {
+          {selectedTool === 'pencil' && pencilOptions(changePencilPoint, selectedColor, selectedPenSize).map(({component, onClick}, i) => {
+            return <li key={`tool-option-${i}`}><button className='option' onClick={onClick}>{component()}</button></li>
+          })}
+
+          {selectedTool === 'line-maker' && lineOptions(changeLineWidth, selectedLineWidth).map(({component, onClick}, i) => {
             return <li key={`tool-option-${i}`}><button className='option' onClick={onClick}>{component()}</button></li>
           })} 
         </ul>
